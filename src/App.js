@@ -1,24 +1,64 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import useContentful from './hooks/use-contentful'
+import Person from './components/Person';
+import Bookmark from './components/Bookmark';
 
-function App() {
+const query =  `
+query {
+  personCollection{
+    items{
+      name
+      age
+      linkedin
+      github
+      bio{
+        json
+      }
+      photo{
+        title
+        url(transform:{
+          width:120
+          height:120
+        })
+      }
+    }
+  }
+  bookmarksCollection(limit:100){
+    items{
+      sys{
+        id
+      }
+      title
+      url
+      comment
+      tagsCollection{
+        items{
+          title
+        }
+      }
+    }
+  }
+  
+}
+`
+
+
+
+const App = () => {
+    let {data, errors} = useContentful(query)
+  console.log(data)
+  if(errors) return <h5 style={{color:"red"}}>
+    {errors.map( err => err.message).join(" , ")}
+   </h5>
+
+  if(!data) return <div>loading ...</div>
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Person person={data.personCollection.items[0]} />
+   {/*    {data.personCollection.items.map((p, i) => <div key={i}>
+        <Person person={p} />  
+      </div> )} */}
+      <Bookmark bookmark={data.bookmarksCollection.items} />
     </div>
   );
 }
